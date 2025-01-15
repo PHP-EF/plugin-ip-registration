@@ -1,0 +1,17 @@
+[
+    {
+      "name": "Example",
+      "repo": "https://github.com/php-ef/plugin-ip-registration",
+      "author": "TehMuffinMoo",
+      "category": "Access Management",
+      "description": "This PHP-EF plugin allows you to register users' IP Addresses and push them into PfSense IP Tables.",
+      "icon": "https://raw.githubusercontent.com/php-ef/plugin-ip-registration/main/logo.png",
+      "contact": "https://github.com/php-ef/plugin-ip-registration/issues",
+      "link": "https://github.com/php-ef/plugin-ip-registration",
+      "version": "1.0.0",
+      "minimum_php-ef_version": "0.7.4",
+      "release_date": "2025-01-15",
+      "last_updated": "2025-01-15",
+      "github_folder": ""
+    }
+]
