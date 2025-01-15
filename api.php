@@ -1,10 +1,8 @@
 <?php
-// **
-// USED TO DEFINE CUSTOM API ROUTES
-// **
+// Get plugin settings
 $app->get('/plugin/ipregistration/settings', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_pluginGetSettings());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -12,30 +10,32 @@ $app->get('/plugin/ipregistration/settings', function ($request, $response, $arg
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
-
+// Admin function to force update of firewall ACL
+$app->post('/plugin/ipregistration/update', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->updateFirewall();
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+// Register a new IP Address
 $app->get('/plugin/ipregistration/register', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
-		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginIPRegistration());
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+		$ipRegistrationPlugin->registerIP();
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
 	return $response
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
-$app->get('/plugin/ipregistration/update', function ($request, $response, $args) {
-	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
-		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginUpdateFirewall());
-	}
-	$response->getBody()->write(jsonE($GLOBALS['api']));
-	return $response
-		->withHeader('Content-Type', 'application/json;charset=UTF-8')
-		->withStatus($GLOBALS['responseCode']);
-});
+
 $app->get('/plugin/ipregistration/query', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginQueryIPs());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -45,8 +45,8 @@ $app->get('/plugin/ipregistration/query', function ($request, $response, $args) 
 });
 $app->get('/plugin/ipregistration/list', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
-		$GLOBALS['api'] = $ipRegistrationPlugin->_ipRegistrationPluginListIPs();
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrationList());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
 	return $response
@@ -55,7 +55,7 @@ $app->get('/plugin/ipregistration/list', function ($request, $response, $args) {
 });
 $app->delete('/plugin/ipregistration/ip/{id}', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->auth->checkAccess('Plugins','IP-Registration')['auth'] ?? 'IP-AUTH')) {
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
 		$id = $args['id'] ?? null;
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginDeleteIP($id));
 	}
