@@ -34,8 +34,7 @@ class ipRegistrationPlugin extends phpef {
 		$this->hasDB();
 	}
 
-	public function _pluginGetSettings()
-	{
+	public function _pluginGetSettings() {
 		return array(
 			'Plugin Settings' => array(
 				$this->settingsOption('js', 'pluginJs', ['src' => '/api/page/plugin/IP-Registration/js']),
@@ -84,22 +83,36 @@ class ipRegistrationPlugin extends phpef {
         )");
     }
 
-	public function getIPRegistration($UserIP = null, $Username = null) {
-        if ($UserIP) {
-            $dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip');
-			$dbquery->execute([':ip' => $UserIP]);
-        } elseif ($Username) {
-            $dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
-			$dbquery->execute([':username' => $Username]);
-        } else {
-			$dbquery = $this->sql->prepare('SELECT * FROM ips');
-			$dbquery->execute();
+	public function getIPRegistrations($UserIP = null, $Username = null) {
+		$auth = $this->auth->getAuth();
+		if (isset ($auth['isAdmin']) && $auth['isAdmin'] == true) {
+			if ($UserIP) {
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip');
+				$dbquery->execute([':ip' => $UserIP]);
+			} elseif ($Username) {
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+				$dbquery->execute([':username' => $Username]);
+			} else {
+				$dbquery = $this->sql->prepare('SELECT * FROM ips');
+				$dbquery->execute();
+			}
+		} else {
+			if ($auth['Authenticated']) {
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+				$dbquery->execute([':username' => $auth['Username']]);
+			}
 		}
 		return $dbquery->fetchAll(PDO::FETCH_ASSOC);
 	}
 
+	private function getIPRegistrationById($id) {
+		$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE id = :id');
+		$dbquery->execute([':id' => $id]);
+		return $dbquery->fetch(PDO::FETCH_ASSOC);
+	}
+
 	public function getIPRegistrationList() {
-		$IPs = $this->getIPRegistration();
+		$IPs = $this->getIPRegistrations();
 		foreach ($IPs as $IP) {
 			echo $IP['ip'].PHP_EOL;
 		}
@@ -110,6 +123,26 @@ class ipRegistrationPlugin extends phpef {
 		if ($dbquery->execute([':datetime' => $datetime, ':type' => $type, ':ip' => $ip, ':username' => $username])) {
 			return true;
 		} else {
+			return false;
+		}
+	}
+
+	public function deleteIPRegistration($id) {
+		$registration = $this->getIPRegistrationById($id);
+		if ($registration) {
+			$dbquery = $this->sql->prepare('DELETE FROM ips WHERE id = :id');
+			if ($dbquery->execute([':id' => $id])) {
+				$this->logging->writeLog('IPRegistration','Successfully deleted IP Address from database','info',$registration);
+				$this->api->setAPIResponseMessage('Successfully deleted IP Address from database.');
+				return true;
+			} else {
+				$this->logging->writeLog('IPRegistration','Failed to delete IP Address from database','error',$registration);
+				$this->api->setAPIResponse('Error','Failed to delete IP Address from database.',409,$registration);
+				return false;
+			}
+		} else {
+			$this->logging->writeLog('IPRegistration','IP Address does not exist in database','error',["id" => $id]);
+			$this->api->setAPIResponse('Error','IP Address does not exist in database',409,["id" => $id]);
 			return false;
 		}
 	}
@@ -128,7 +161,7 @@ class ipRegistrationPlugin extends phpef {
 		);
 		if (filter_var($User['IPAddress'], FILTER_VALIDATE_IP)) {
 			if (filter_var($User['IPAddress'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-		    	$DBResult = $this->getIPRegistration($User['IPAddress']);
+		    	$DBResult = $this->getIPRegistrations($User['IPAddress']);
 		        if ($DBResult) {
 					$Result['Response']['Location'] = "External";
 					$Result['Response']['Status'] = "Exists";
@@ -149,7 +182,7 @@ class ipRegistrationPlugin extends phpef {
 						$this->api->setAPIResponse('Error','Failed to add IP Address to database: '.$User['IPAddress'],409,$Result['Response']);
 					} else {
 						// Check it was added to Database OK
-						$IPs = $this->getIPRegistration($User['IPAddress']);
+						$IPs = $this->getIPRegistrations($User['IPAddress']);
 						if ($IPs) {
 							$Result['Response']['Location'] = "External";
 							$Result['Response']['Status'] = "Added";

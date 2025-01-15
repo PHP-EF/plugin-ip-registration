@@ -36,7 +36,7 @@ $app->get('/plugin/ipregistration/register', function ($request, $response, $arg
 $app->get('/plugin/ipregistration/query', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
-		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginQueryIPs());
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrations());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
 	return $response
@@ -57,7 +57,7 @@ $app->delete('/plugin/ipregistration/ip/{id}', function ($request, $response, $a
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
 		$id = $args['id'] ?? null;
-		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->_ipRegistrationPluginDeleteIP($id));
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->deleteIPRegistration($id));
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
 	return $response
