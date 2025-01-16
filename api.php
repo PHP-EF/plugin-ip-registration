@@ -45,13 +45,19 @@ $app->get('/plugin/ipregistration/query', function ($request, $response, $args) 
 });
 $app->get('/plugin/ipregistration/list', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+	$data = $request->getQueryParams();
+	if ($data['ApiKey'] == $ipRegistrationPlugin->pluginConfig['ApiToken'] || $ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrationList());
+		$response->getBody()->write($GLOBALS['api']['data']);
+		return $response
+			->withHeader('Content-Type', 'text/plain')
+			->withStatus($GLOBALS['responseCode']);
+	} else {
+		$response->getBody()->write(jsonE($GLOBALS['api']));
+		return $response
+			->withHeader('Content-Type', 'application/json')
+			->withStatus($GLOBALS['responseCode']);
 	}
-	$response->getBody()->write(jsonE($GLOBALS['api']));
-	return $response
-		->withHeader('Content-Type', 'application/json;charset=UTF-8')
-		->withStatus($GLOBALS['responseCode']);
 });
 $app->delete('/plugin/ipregistration/ip/{id}', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();

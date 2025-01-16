@@ -18,7 +18,7 @@ $GLOBALS['plugins']['IP-Registration'] = [ // Plugin Name
 class ipRegistrationPlugin extends phpef {
 	private $sql;
 	private $sqlHelper;
-	private $pluginConfig;
+	public $pluginConfig;
 
 	public function __construct() {
 		parent::__construct();
@@ -45,6 +45,8 @@ class ipRegistrationPlugin extends phpef {
 				$this->settingsOption('input', 'PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.', 'placeholder' => '100']),
 				$this->settingsOption('passwordalt', 'ApiToken',['label' => 'IP Registration API Token']),
+				$this->settingsOption('input', 'PlexDomain', ['label' => 'The domain for Plex to run availability checks against', 'placeholder' => 'myplexserver.site']),
+				$this->settingsOption('input', 'PlexPort', ['label' => 'The port for Plex to run availability checks against.', 'placeholder' => '32400']),
 				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationGenerateAPIKey();"']),
 			),
 		);
@@ -83,9 +85,9 @@ class ipRegistrationPlugin extends phpef {
         )");
     }
 
-	public function getIPRegistrations($UserIP = null, $Username = null) {
+	public function getIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
 		$auth = $this->auth->getAuth();
-		if (isset ($auth['isAdmin']) && $auth['isAdmin'] == true) {
+		if ($viaAPIToken || (isset($auth['isAdmin']) && $auth['isAdmin'] == true)) {
 			if ($UserIP) {
 				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip');
 				$dbquery->execute([':ip' => $UserIP]);
@@ -112,10 +114,12 @@ class ipRegistrationPlugin extends phpef {
 	}
 
 	public function getIPRegistrationList() {
-		$IPs = $this->getIPRegistrations();
+		$IPs = $this->getIPRegistrations(null,null,true);
+		$ipList = '';
 		foreach ($IPs as $IP) {
-			echo $IP['ip'].PHP_EOL;
+			$ipList .= $IP['ip'] . PHP_EOL;
 		}
+		return $ipList;
 	}
 
 	private function newIPRegistration($datetime,$type,$ip,$username) {

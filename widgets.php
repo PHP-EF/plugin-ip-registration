@@ -20,6 +20,9 @@ class IPRegistrationWidget implements WidgetInterface {
     }
 
     public function render() {
+        $ipRegistrationPlugin = new ipRegistrationPlugin();
+        $PlexDomain = $ipRegistrationPlugin->pluginConfig['PlexDomain'] ?? 'plex.tv';
+        $PlexPort = $ipRegistrationPlugin->pluginConfig['PlexPort'] ?? '32400';
         return <<<EOF
         <style>
             .card-body {
@@ -29,52 +32,51 @@ class IPRegistrationWidget implements WidgetInterface {
                 display: block;
             }
         </style>
-        <div class="row">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="pull-left homepage-element-title"><span lang="en">IP Registration</span></h4>
+
+        <div class="col-md-12 homepage-item-collapse" data-bs-toggle="collapse" href="#ip-collapse" data-bs-parent="#ip" aria-expanded="true" aria-controls="ip-collapse">
+            <h4 class="float-left homepage-item-title"><span lang="en">IP Registration</span></h4>
+            <h4 class="float-left">&nbsp;</h4>
+            <hr class="hr-alt ml-2">
+        </div>
+        <div class="panel-collapse collapse show" id="ip-collapse" aria-labelledby="ip-heading" role="tabpanel" aria-expanded="true" style="">
+            <div class="row">
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card-body pt-1 pb-2">
+                            <div class="d-flex no-block align-items-center">
+                                <div class="left-health bg-success" id="Info-Health"></div>
+                                <div class="ms-1 w-100 d-flex">
+                                    <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h1" id="Info-Circle"></i>
+                                    <h3 class="d-flex no-block align-items-center mt-3 mb-2" id="Info">Internal IP Address</h3>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-            
-                <div class="row">
-                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse text-white mb-3 monitorr-card">
-                            <div class="card-body bg-org-alt pt-1 pb-1">
-                                <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="Info-Health"></div>
-                                    <div class="ml-1 w-100">
-                                        <i class="font-20 pull-right mt-3 mb-2 text-success fa fa-check-circle" id="Info-Circle"></i>
-                                        <h3 class="d-flex no-block align-items-center mt-2 mb-2" id="Info">Internal IP Address</h3>
-                                        <div class="clearfix"></div>
-                                    </div>
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card-body pt-1 pb-1">
+                            <div class="d-flex no-block align-items-center">
+                                <div class="left-health bg-success" id="Connection-Health"></div>
+                                <div class="ms-1 w-100 d-flex">
+                                    <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h1" id="Connection-Circle"></i>
+                                    <h3 class="d-flex no-block align-items-center mt-3 mb-2" id="Connection">Plex is reachable.</h3>
+                                    <div class="clearfix"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse text-white mb-3 monitorr-card">
-                            <div class="card-body bg-org-alt pt-1 pb-1">
-                                <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="Connection-Health"></div>
-                                    <div class="ml-1 w-100">
-                                        <i class="font-20 pull-right mt-3 mb-2 fa fa-check-circle text-success" id="Connection-Circle"></i>
-                                        <h3 class="d-flex no-block align-items-center mt-2 mb-2" id="Connection">Plex is reachable.</h3>
+                </div>
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card-body pt-1 pb-1">
+                            <div class="d-flex no-block align-items-center">
+                                <div class="left-health bg-success" id="IP-Health"></div>
+                                    <div class="ms-1 w-100 d-flex">
+                                        <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h1" id="IP-Circle"></i>
+                                        <h3 class="d-flex no-block align-items-center mt-3 mb-2" id="IP">10.10.140.110</h3>
                                         <div class="clearfix"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse text-white mb-3 monitorr-card">
-                            <div class="card-body bg-org-alt pt-1 pb-1">
-                                <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="IP-Health"></div>
-                                        <div class="ml-1 w-100">
-                                            <i class="font-20 pull-right mt-3 mb-2 text-success fa fa-check-circle" id="IP-Circle"></i>
-                                            <h3 class="d-flex no-block align-items-center mt-2 mb-2" id="IP">10.10.140.110</h3>
-                                            <div class="clearfix"></div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -88,7 +90,6 @@ class IPRegistrationWidget implements WidgetInterface {
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var RequestJSON = JSON.parse(this.responseText);
-            console.log(RequestJSON);
             document.getElementById("IP").innerHTML = RequestJSON.data.IP;
             document.getElementById("Info").innerHTML = RequestJSON.data.Message;
             
@@ -122,29 +123,30 @@ class IPRegistrationWidget implements WidgetInterface {
         xmlhttp.send();
         </script>
 
-        <script>
-        var Ping=function(){this._version="0.0.1"};Ping.prototype.ping=function(a,b,c){function d(){e&&clearTimeout(e);var a=new Date-f;"function"==typeof b&&b(a)}this.img=new Image,c=c||0;var e,f=new Date;this.img.onload=this.img.onerror=d,c&&(e=setTimeout(d,c)),this.img.src="//"+a+"/?"+ +new Date};
-        </script>
         <script type="text/javascript">
             function checkServer() {
-                var p = new Ping();
-                var server = "app.tmmn.uk"; //Try to get it automagically, but you can manually specify this
-                var timeout = 3000; //Milliseconds
-                p.ping(server+":443", function(data) {
-                    var serverMsg = document.getElementById( "Connection" );
-                    if (data < 3000){
+                const p = new Ping();
+                const server = "$PlexDomain"; // Try to get it automagically, but you can manually specify this
+                const timeout = 3000; // Milliseconds
+
+                p.ping(`${server}:$PlexPort`, (data) => {
+                    const serverMsg = document.getElementById("Connection");
+                    const connectionCircle = document.getElementById("Connection-Circle");
+                    const connectionHealth = document.getElementById("Connection-Health");
+
+                    if (data < timeout) {
                         serverMsg.innerHTML = "Plex is reachable.";
-                        document.getElementById("Connection-Circle").classList.remove("spinner-border","text-light");
-                        document.getElementById("Connection-Health").classList.remove("bg-light","bg-danger");
-                        document.getElementById("Connection-Circle").classList.add("fa","fa-check-circle","text-success");
-                        document.getElementById("Connection-Health").classList.add("bg-success");
-                    }else{
+                        connectionCircle.classList.remove("spinner-border", "text-light");
+                        connectionHealth.classList.remove("bg-light", "bg-danger");
+                        connectionCircle.classList.add("fa", "fa-check-circle", "text-success");
+                        connectionHealth.classList.add("bg-success");
+                    } else {
                         serverMsg.innerHTML = "Plex is unavailable.";
-                        document.getElementById("Connection-Circle").classList.remove("spinner-border","text-light");
-                        document.getElementById("Connection-Health").classList.remove("bg-light","bg-success");
-                        document.getElementById("Connection-Circle").classList.add("fa","fa-times-circle","text-danger");
-                        document.getElementById("Connection-Health").classList.add("bg-danger");
-                        setTimeout("checkServer()",5000);
+                        connectionCircle.classList.remove("spinner-border", "text-light");
+                        connectionHealth.classList.remove("bg-light", "bg-success");
+                        connectionCircle.classList.add("fa", "fa-times-circle", "text-danger");
+                        connectionHealth.classList.add("bg-danger");
+                        setTimeout(checkServer, 5000);
                     }
                 }, timeout);
             }
