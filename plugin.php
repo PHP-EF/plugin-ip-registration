@@ -150,7 +150,6 @@ class ipRegistrationPlugin extends phpef {
 	public function registerIP() {
 		$User = $this->auth->getAuth();
 		$Result = array (
-			"Request" => $_SERVER['HTTP_X_FORWARDED_FOR'],
 			"Response" => array (
 				"IP" => $User['IPAddress'],
 				"Username" => $User['Username'],
