@@ -49,7 +49,7 @@ class IPRegistrationWidget implements WidgetInterface {
             <div class="panel-collapse collapse show" id="ip-collapse" aria-labelledby="ip-heading" role="tabpanel" aria-expanded="true" style="">
                 <div class="row">
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
                             <div class="card-body pt-1 pb-2">
                                 <div class="d-flex no-block align-items-center">
                                     <div class="left-health bg-success" id="Info-Health"></div>
@@ -63,7 +63,7 @@ class IPRegistrationWidget implements WidgetInterface {
                         </div>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
                             <div class="card-body pt-1 pb-1">
                                 <div class="d-flex no-block align-items-center">
                                     <div class="left-health bg-success" id="Connection-Health"></div>
@@ -77,7 +77,7 @@ class IPRegistrationWidget implements WidgetInterface {
                         </div>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card bg-inverse mb-3 monitorr-card">
+                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
                             <div class="card-body pt-1 pb-1">
                                 <div class="d-flex no-block align-items-center">
                                     <div class="left-health bg-success" id="IP-Health"></div>
