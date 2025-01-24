@@ -45,7 +45,7 @@ class ipRegistrationPlugin extends phpef {
 				$this->settingsOption('input', 'PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.', 'placeholder' => '100']),
 				$this->settingsOption('passwordalt', 'ApiToken',['label' => 'IP Registration API Token']),
-				$this->settingsOption('input', 'PlexDomain', ['label' => 'The domain for Plex to run availability checks against', 'placeholder' => 'myplexserver.site']),
+				$this->settingsOption('url', 'PlexDomain', ['label' => 'The domain for Plex to run availability checks against', 'placeholder' => 'https://myplexserver.site']),
 				$this->settingsOption('input', 'PlexPort', ['label' => 'The port for Plex to run availability checks against.', 'placeholder' => '32400']),
 				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationGenerateAPIKey();"']),
 			),

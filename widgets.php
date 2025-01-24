@@ -25,12 +25,13 @@ class IPRegistrationWidget implements WidgetInterface {
     }
 
     public function render() {
-        $Config = $this->phpef->config->get('Widgets','IP Registration') ?? [];
-        $Auth = $Config['auth'] ?? null;
-        $Enabled = $Config['enabled'] ?? false;
+        $WidgetConfig = $this->phpef->config->get('Widgets','IP Registration') ?? [];
+        $PluginConfig = $this->phpef->config->get('Plugins','IP-Registration') ?? [];
+        $Auth = $WidgetConfig['auth'] ?? null;
+        $Enabled = $WidgetConfig['enabled'] ?? false;
         if ($this->phpef->auth->checkAccess($Auth) !== false && $Enabled) {
-            $PlexDomain = $ipRegistrationPlugin->pluginConfig['PlexDomain'] ?? 'plex.tv';
-            $PlexPort = $ipRegistrationPlugin->pluginConfig['PlexPort'] ?? '32400';
+            $PlexDomain = $PluginConfig['PlexDomain'] ?? 'https://plex.tv';
+            $PlexPort = $PluginConfig['PlexPort'] ?? '32400';
             return <<<EOF
             <style>
                 .card-body {
@@ -49,13 +50,13 @@ class IPRegistrationWidget implements WidgetInterface {
             <div class="panel-collapse collapse show" id="ip-collapse" aria-labelledby="ip-heading" role="tabpanel" aria-expanded="true" style="">
                 <div class="row">
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
-                            <div class="card-body pt-1 pb-2">
+                        <div class="card card-rounded bg-inverse mb-lg-0 mb-2 monitorr-card">
+                            <div class="card-body pt-1 pb-1">
                                 <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="Info-Health"></div>
+                                    <div class="left-health bg-info" id="Info-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
-                                        <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h3" id="Info-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Info">Internal IP Address</h4>
+                                        <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-success" id="Info-Circle"></i>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Info">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -63,13 +64,13 @@ class IPRegistrationWidget implements WidgetInterface {
                         </div>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
+                        <div class="card card-rounded bg-inverse mb-lg-0 mb-2 monitorr-card">
                             <div class="card-body pt-1 pb-1">
                                 <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="Connection-Health"></div>
+                                    <div class="left-health bg-info" id="Connection-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
-                                        <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h3" id="Connection-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Connection">Plex is reachable.</h4>
+                                        <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-info" id="Connection-Circle"></i>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Connection">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -77,13 +78,13 @@ class IPRegistrationWidget implements WidgetInterface {
                         </div>
                     </div>
                     <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                        <div class="card card-rounded bg-inverse mb-3 monitorr-card">
+                        <div class="card card-rounded bg-inverse monitorr-card">
                             <div class="card-body pt-1 pb-1">
                                 <div class="d-flex no-block align-items-center">
-                                    <div class="left-health bg-success" id="IP-Health"></div>
+                                    <div class="left-health bg-info" id="IP-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
-                                        <i class="float-right mt-2 mb-2 me-2 text-success fa fa-check-circle h3" id="IP-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="IP">10.10.140.110</h4>
+                                        <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-success" id="IP-Circle"></i>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="IP">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -146,12 +147,14 @@ class IPRegistrationWidget implements WidgetInterface {
                             serverMsg.innerHTML = "Plex is reachable.";
                             connectionCircle.classList.remove("spinner-border", "text-light");
                             connectionHealth.classList.remove("bg-light", "bg-danger");
+                            connectionCircle.classList.remove("text-info", "text-danger");
                             connectionCircle.classList.add("fa", "fa-check-circle", "text-success");
                             connectionHealth.classList.add("bg-success");
                         } else {
                             serverMsg.innerHTML = "Plex is unavailable.";
                             connectionCircle.classList.remove("spinner-border", "text-light");
                             connectionHealth.classList.remove("bg-light", "bg-success");
+                            connectionCircle.classList.remove("text-info", "text-success");
                             connectionCircle.classList.add("fa", "fa-times-circle", "text-danger");
                             connectionHealth.classList.add("bg-danger");
                             setTimeout(checkServer, 5000);
