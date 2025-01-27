@@ -47,7 +47,7 @@ $app->get('/plugin/ipregistration/query', function ($request, $response, $args) 
 $app->get('/plugin/ipregistration/list', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	$data = $request->getQueryParams();
-	if ($data['ApiKey'] == $ipRegistrationPlugin->pluginConfig['ApiToken'] || $ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+	if (!empty($ipRegistrationPlugin->pluginConfig['ApiToken'] && $data['ApiKey'] == $ipRegistrationPlugin->pluginConfig['ApiToken']) || $ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrationList());
 		$response->getBody()->write($GLOBALS['api']['data']);
 		return $response
