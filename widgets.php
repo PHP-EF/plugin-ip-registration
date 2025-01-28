@@ -56,7 +56,7 @@ class IPRegistrationWidget implements WidgetInterface {
                                     <div class="left-health bg-info" id="Info-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
                                         <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-success" id="Info-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Info">Checking..</h4>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Info-Detail">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -70,7 +70,7 @@ class IPRegistrationWidget implements WidgetInterface {
                                     <div class="left-health bg-info" id="Connection-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
                                         <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-info" id="Connection-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Connection">Checking..</h4>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="Connection-Detail">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -84,7 +84,7 @@ class IPRegistrationWidget implements WidgetInterface {
                                     <div class="left-health bg-info" id="IP-Health"></div>
                                     <div class="ms-1 w-100 d-flex">
                                         <i class="float-right mt-2 mb-2 me-2 fa fa-check-circle h3 text-success" id="IP-Circle"></i>
-                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="IP">Checking..</h4>
+                                        <h4 class="d-flex no-block align-items-center mt-2 mb-2" id="IP-Detail">Checking..</h4>
                                         <div class="clearfix"></div>
                                     </div>
                                 </div>
@@ -95,73 +95,67 @@ class IPRegistrationWidget implements WidgetInterface {
             </div>
 
             <script>
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                var RequestJSON = JSON.parse(this.responseText);
-                document.getElementById("IP").innerHTML = RequestJSON.data.IP;
-                document.getElementById("Info").innerHTML = RequestJSON.data.Message;
-                
-                if ($.inArray(RequestJSON.data.Status, ['Error', 'Adding', 'Added', 'OK', 'Exists']) >= 0) {
-                    document.getElementById("IP-Circle").classList.remove("spinner-border","text-light");
-                    document.getElementById("IP-Health").classList.remove("bg-light");
-                    document.getElementById("Info-Circle").classList.remove("spinner-border","text-light");
-                    document.getElementById("Info-Health").classList.remove("bg-light");
+            var ipDetail = $("#IP-Detail");
+            var ipCircle = $("#IP-Circle");
+            var ipHealth = $("#IP-Health");
+            var infoDetail = $("#Info-Detail");
+            var infoCircle = $("#Info-Circle");
+            var infoHealth = $("#Info-Health");
+            var connectionDetail = $("#Connection-Detail");
+            var connectionCircle = $("#Connection-Circle");
+            var connectionHealth = $("#Connection-Health");
+
+            queryAPI('GET','/api/plugin/ipregistration/register').done(function(data) {
+                if ($.inArray(data.data.Status, ['Error', 'Adding', 'Added', 'OK', 'Exists']) >= 0) {
+                    ipCircle.removeClass("spinner-border text-light");
+                    ipHealth.removeClass("bg-light");
+                    infoCircle.removeClass("spinner-border text-light");
+                    infoHealth.removeClass("bg-light");
                 }
-                if ($.inArray(RequestJSON.data.Status, ['Error']) >= 0) {
-                    document.getElementById("IP-Circle").classList.add("text-danger","fa","fa-times-circle");
-                    document.getElementById("IP-Health").classList.add("bg-danger");
-                    document.getElementById("Info-Circle").classList.add("text-danger","fa","fa-times-circle");
-                    document.getElementById("Info-Health").classList.add("bg-danger");
+                if ($.inArray(data.data.Status, ['Error']) >= 0) {
+                    ipCircle.addClass("text-danger fa fa-times-circle");
+                    ipHealth.addClass("bg-danger");
+                    infoCircle.addClass("text-danger fa fa-times-circle");
+                    infoHealth.addClass("bg-danger");
                 }
-                if (RequestJSON.data.Status == "Added") {
-                    document.getElementById("IP-Circle").classList.add("text-info","fa","fa-check-circle");
-                    document.getElementById("IP-Health").classList.add("bg-info");
-                    document.getElementById("Info-Circle").classList.add("text-info","fa","fa-check-circle");
-                    document.getElementById("Info-Health").classList.add("bg-info");
+                if (data.data.Status == "Added") {
+                    ipCircle.addClass("text-info fa fa-check-circle");
+                    ipHealth.addClass("bg-info");
+                    infoCircle.addClass("text-info fa fa-check-circle");
+                    infoHealth.addClass("bg-info");
                 }
-                if ($.inArray(RequestJSON.data.Status, ['Exists', 'OK']) >= 0) {
-                    document.getElementById("IP-Circle").classList.add("text-success","fa","fa-check-circle");
-                    document.getElementById("IP-Health").classList.add("bg-success");
-                    document.getElementById("Info-Circle").classList.add("text-success","fa","fa-check-circle");
-                    document.getElementById("Info-Health").classList.add("bg-success");
+                if ($.inArray(data.data.Status, ['Exists', 'OK']) >= 0) {
+                    ipCircle.addClass("text-success fa fa-check-circle");
+                    ipHealth.addClass("bg-success");
+                    infoCircle.addClass("text-success fa fa-check-circle");
+                    infoHealth.addClass("bg-success");
                 }
+                ipDetail.text(data.data.IP);
+                infoDetail.text(data.data.Message);
+            });
+
+            function checkServer() {
+                const p = new Ping();
+                const server = "$PlexDomain"; // Try to get it automagically, but you can manually specify this
+                const timeout = 3000; // Milliseconds
+
+                p.ping(`$PlexDomain:$PlexPort`, (data) => {
+                    if (data < timeout) {
+                        connectionDetail.text("Plex is reachable.");
+                        connectionCircle.removeClass("spinner-border text-light text-info text-danger");
+                        connectionCircle.addClass("fa fa-check-circle text-success");
+                        connectionHealth.removeClass("bg-light bg-danger");
+                        connectionHealth.addClass("bg-success");
+                    } else {
+                        connectionDetail.text("Plex is unavailable.");
+                        connectionCircle.removeClass("spinner-border text-light text-info text-success bg-success bg-light");
+                        connectionCircle.addClass("fa fa-times-circle text-danger");
+                        connectionHealth.addClass("bg-danger");
+                        setTimeout(checkServer, 5000);
+                    }
+                }, timeout);
             }
-            };
-            xmlhttp.open("GET", "/api/plugin/ipregistration/register", true);
-            xmlhttp.send();
-            </script>
-
-            <script type="text/javascript">
-                function checkServer() {
-                    const p = new Ping();
-                    const server = "$PlexDomain"; // Try to get it automagically, but you can manually specify this
-                    const timeout = 3000; // Milliseconds
-
-                    p.ping(`$PlexDomain:$PlexPort`, (data) => {
-                        const serverMsg = document.getElementById("Connection");
-                        const connectionCircle = document.getElementById("Connection-Circle");
-                        const connectionHealth = document.getElementById("Connection-Health");
-
-                        if (data < timeout) {
-                            serverMsg.innerHTML = "Plex is reachable.";
-                            connectionCircle.classList.remove("spinner-border", "text-light");
-                            connectionHealth.classList.remove("bg-light", "bg-danger");
-                            connectionCircle.classList.remove("text-info", "text-danger");
-                            connectionCircle.classList.add("fa", "fa-check-circle", "text-success");
-                            connectionHealth.classList.add("bg-success");
-                        } else {
-                            serverMsg.innerHTML = "Plex is unavailable.";
-                            connectionCircle.classList.remove("spinner-border", "text-light");
-                            connectionHealth.classList.remove("bg-light", "bg-success");
-                            connectionCircle.classList.remove("text-info", "text-success");
-                            connectionCircle.classList.add("fa", "fa-times-circle", "text-danger");
-                            connectionHealth.classList.add("bg-danger");
-                            setTimeout(checkServer, 5000);
-                        }
-                    }, timeout);
-                }
-                checkServer();
+            checkServer();
             </script>
             EOF;
         }
