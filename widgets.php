@@ -27,7 +27,7 @@ class IPRegistrationWidget implements WidgetInterface {
     public function render() {
         $WidgetConfig = $this->phpef->config->get('Widgets','IP Registration') ?? [];
         $PluginConfig = $this->phpef->config->get('Plugins','IP-Registration') ?? [];
-        $Auth = $WidgetConfig['auth'] ?? null;
+        $Auth = $WidgetConfig ['Auth'] ?? 'IP-AUTH';
         $Enabled = $WidgetConfig['enabled'] ?? false;
         if ($this->phpef->auth->checkAccess($Auth) !== false && $Enabled) {
             $PlexDomain = $PluginConfig['PlexDomain'] ?? 'https://plex.tv';

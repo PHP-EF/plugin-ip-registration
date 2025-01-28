@@ -24,7 +24,7 @@ $app->post('/plugin/ipregistration/update', function ($request, $response, $args
 // Register a new IP Address
 $app->get('/plugin/ipregistration/register', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['Auth'] ?? "IP-AUTH")) {
 		$ipRegistrationPlugin->registerIP();
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -35,7 +35,7 @@ $app->get('/plugin/ipregistration/register', function ($request, $response, $arg
 
 $app->get('/plugin/ipregistration/query', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration") ['Auth'] ?? "IP-AUTH")) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrations());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -63,7 +63,7 @@ $app->get('/plugin/ipregistration/list', function ($request, $response, $args) {
 
 $app->delete('/plugin/ipregistration/ip/{id}', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration")['auth'] ?? "IP-AUTH")) {
+	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration") ['Auth'] ?? "IP-AUTH")) {
 		$id = $args['id'] ?? null;
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->deleteIPRegistration($id));
 	}
