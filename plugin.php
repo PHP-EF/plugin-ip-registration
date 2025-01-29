@@ -56,19 +56,23 @@ class ipRegistrationPlugin extends phpef {
 			],
 			[
 				'field' => 'type',
-				'title' => 'Type'
+				'title' => 'Type',
+                'dataAttributes' => ['sortable' => 'true'],
 			],
 			[
 				'field' => 'ip',
-				'title' => 'IP Address'
+				'title' => 'IP Address',
+                'dataAttributes' => ['sortable' => 'true'],
 			],
 			[
 				'field' => 'username',
-				'title' => 'Username'
+				'title' => 'Username',
+                'dataAttributes' => ['sortable' => 'true'],
 			],
 			[
 				'field' => 'datetime',
-				'title' => 'Date / Time'
+				'title' => 'Date / Time',
+                'dataAttributes' => ['sortable' => 'true'],
 			],
 			// [
 			// 	'title' => 'Actions',
