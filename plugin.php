@@ -35,6 +35,59 @@ class ipRegistrationPlugin extends phpef {
 	}
 
 	public function _pluginGetSettings() {
+		$TableAttributes = [
+			'data-field' => 'data',
+			'toggle' => 'table',
+			'search' => 'true',
+			'filter-control' => 'true',
+			'show-refresh' => 'true',
+			'pagination' => 'true',
+			'toolbar' => '#toolbar',
+			'show-columns' => 'true',
+			'page-size' => '25',
+			'response-handler' => 'responseHandler',
+		];
+	
+		$IPTableColumns = [
+			[
+				'field' => 'id',
+				'title' => 'Id',
+				'dataAttributes' => ['visible' => 'false']
+			],
+			[
+				'field' => 'type',
+				'title' => 'Type'
+			],
+			[
+				'field' => 'ip',
+				'title' => 'IP Address'
+			],
+			[
+				'field' => 'username',
+				'title' => 'Username'
+			],
+			[
+				'field' => 'datetime',
+				'title' => 'Date / Time'
+			],
+			// [
+			// 	'title' => 'Actions',
+			// 	'dataAttributes' => ['events' => 'pageActionEvents', 'formatter' => 'pageActionFormatter'],
+			// ]
+		];
+
+		$IPTableAttributes = $TableAttributes;
+		$IPTableAttributes['url'] = '/api/plugin/ipregistration/query';
+		$IPTableAttributes['search'] = 'true';
+		$IPTableAttributes['filter-control'] = 'true';
+		$IPTableAttributes['show-refresh'] = 'true';
+		$IPTableAttributes['pagination'] = 'true';
+		$IPTableAttributes['toolbar'] = '#toolbar';
+		$IPTableAttributes['sort-name'] = 'datetime';
+		$IPTableAttributes['sort-order'] = 'asc';
+		$IPTableAttributes['show-columns'] = 'true';
+		$IPTableAttributes['page-size'] = '25';
+
 		return array(
 			'Plugin Settings' => array(
 				$this->settingsOption('js', 'pluginJs', ['src' => '/api/page/plugin/IP-Registration/js']),
@@ -49,6 +102,9 @@ class ipRegistrationPlugin extends phpef {
 				$this->settingsOption('input', 'PlexPort', ['label' => 'The port for Plex to run availability checks against.', 'placeholder' => '32400']),
 				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationGenerateAPIKey();"']),
 			),
+			'IP Addresses' => array(
+				$this->settingsOption('bootstrap-table', 'IPTable', ['id' => 'IPTable', 'columns' => $IPTableColumns, 'dataAttributes' => $IPTableAttributes, 'width' => '12']),
+			)
 		);
 	}
 
