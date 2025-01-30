@@ -41,17 +41,6 @@ $this->addHook('user_profile_body', function() {
                     <table  data-url="/api/plugin/ipregistration/own"
                         data-data-field="data"  
                         data-toggle="table"
-                        data-search="true"
-                        data-filter-control="true"
-                        data-show-filter-control-switch="true"
-                        data-filter-control-visible="false"
-                        data-filter-control-multiple-search="true"
-                        data-show-export="true"
-                        data-export-data-type="json, xml, csv, txt, excel, sql"
-                        data-show-refresh="true"
-                        data-show-columns="true"
-                        data-pagination="true"
-                        data-toolbar="#toolbar"
                         class="table table-striped"
                         id="ipRegistrationTable">
 
