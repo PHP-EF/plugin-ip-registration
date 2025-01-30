@@ -74,10 +74,10 @@ class ipRegistrationPlugin extends phpef {
 				'title' => 'Date / Time',
                 'dataAttributes' => ['sortable' => 'true'],
 			],
-			// [
-			// 	'title' => 'Actions',
-			// 	'dataAttributes' => ['events' => 'pageActionEvents', 'formatter' => 'pageActionFormatter'],
-			// ]
+			[
+				'title' => 'Actions',
+				'dataAttributes' => ['events' => 'ipRegistrationTableActionEvents', 'formatter' => 'deleteActionFormatter'],
+			]
 		];
 
 		$IPTableAttributes = $TableAttributes;
@@ -165,6 +165,15 @@ class ipRegistrationPlugin extends phpef {
 			}
 		}
 		return $dbquery->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	public function getOwnIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
+		$auth = $this->auth->getAuth();
+		if ($auth['Authenticated']) {
+			$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+			$dbquery->execute([':username' => $auth['Username']]);
+		}
+			return $dbquery->fetchAll(PDO::FETCH_ASSOC);
 	}
 
 	private function getIPRegistrationById($id) {

@@ -33,9 +33,20 @@ $app->get('/plugin/ipregistration/register', function ($request, $response, $arg
 		->withStatus($GLOBALS['responseCode']);
 });
 
-$app->get('/plugin/ipregistration/query', function ($request, $response, $args) {
+$app->get('/plugin/ipregistration/own', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	if ($ipRegistrationPlugin->auth->checkAccess($ipRegistrationPlugin->config->get("Plugins", "IP-Registration") ['Auth'] ?? "IP-AUTH")) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getOwnIPRegistrations());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+
+$app->get('/plugin/ipregistration/query', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess("ADMIN-CONFIG")) {
 		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getIPRegistrations());
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
