@@ -191,9 +191,10 @@ class ipRegistrationPlugin extends phpef {
 		return $ipList;
 	}
 
-	private function newIPRegistration($datetime,$type,$ip,$username) {
+	private function newIPRegistration($type,$ip,$username) {
+		$now = new DateTime();
 		$dbquery = $this->sql->prepare('INSERT INTO ips (datetime,type,ip,username) VALUES (:datetime,:type,:ip,:username)');
-		if ($dbquery->execute([':datetime' => $datetime, ':type' => $type, ':ip' => $ip, ':username' => $username])) {
+		if ($dbquery->execute([':datetime' => $now->format('Y-m-d H:i:s'), ':type' => $type, ':ip' => $ip, ':username' => $username])) {
 			return true;
 		} else {
 			return false;
@@ -244,12 +245,11 @@ class ipRegistrationPlugin extends phpef {
 				} else {
 					// Write to DB
 					$IPRegistration = [
-						'datetime' => date("j F Y g:ia"),
 						'type' => 'Auto',
 						'ip' => $User['IPAddress'],
 						'username' => $User['Username']
 					];
-					if (!$this->newIPRegistration($IPRegistration['datetime'],$IPRegistration['type'],$IPRegistration['ip'],$IPRegistration['username'])) {
+					if (!$this->newIPRegistration($IPRegistration['type'],$IPRegistration['ip'],$IPRegistration['username'])) {
 						$this->logging->writeLog('IPRegistration','Failed to add IP to database','error',$IPRegistration);
 						$this->api->setAPIResponse('Error','Failed to add IP Address to database: '.$User['IPAddress'],409,$Result['Response']);
 					} else {
