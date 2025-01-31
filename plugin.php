@@ -149,35 +149,35 @@ class ipRegistrationPlugin extends phpef {
 		$auth = $this->auth->getAuth();
 		if ($viaAPIToken || (isset($auth['isAdmin']) && $auth['isAdmin'] == true)) {
 			if ($UserIP) {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip');
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip ORDER BY datetime DESC');
 				$dbquery->execute([':ip' => $UserIP]);
 			} elseif ($Username) {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
 				$dbquery->execute([':username' => $Username]);
 			} else {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips');
+				$dbquery = $this->sql->prepare('SELECT * FROM ips ORDER BY datetime DESC');
 				$dbquery->execute();
 			}
 		} else {
 			if ($auth['Authenticated']) {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
 				$dbquery->execute([':username' => $auth['Username']]);
 			}
 		}
 		return $dbquery->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function getOwnIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
+	public function getOwnIPRegistrations() {
 		$auth = $this->auth->getAuth();
 		if ($auth['Authenticated']) {
-			$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username');
+			$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
 			$dbquery->execute([':username' => $auth['Username']]);
 		}
 			return $dbquery->fetchAll(PDO::FETCH_ASSOC);
 	}
 
 	private function getIPRegistrationById($id) {
-		$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE id = :id');
+		$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE id = :id ORDER BY datetime DESC');
 		$dbquery->execute([':id' => $id]);
 		return $dbquery->fetch(PDO::FETCH_ASSOC);
 	}
