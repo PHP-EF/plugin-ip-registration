@@ -148,6 +148,9 @@ class ipRegistrationPlugin extends phpef {
 	public function getIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
 		$auth = $this->auth->getAuth();
 		if ($viaAPIToken || (isset($auth['isAdmin']) && $auth['isAdmin'] == true)) {
+			$dbquery = $this->sql->prepare('SELECT * FROM ips ORDER BY datetime DESC');
+			$dbquery->execute();
+		} else {
 			if ($UserIP) {
 				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE ip = :ip ORDER BY datetime DESC');
 				$dbquery->execute([':ip' => $UserIP]);
@@ -155,13 +158,10 @@ class ipRegistrationPlugin extends phpef {
 				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
 				$dbquery->execute([':username' => $Username]);
 			} else {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips ORDER BY datetime DESC');
-				$dbquery->execute();
-			}
-		} else {
-			if ($auth['Authenticated']) {
-				$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
-				$dbquery->execute([':username' => $auth['Username']]);
+				if ($auth['Authenticated']) {
+					$dbquery = $this->sql->prepare('SELECT * FROM ips WHERE username = :username ORDER BY datetime DESC');
+					$dbquery->execute([':username' => $auth['Username']]);
+				}
 			}
 		}
 		return $dbquery->fetchAll(PDO::FETCH_ASSOC);
