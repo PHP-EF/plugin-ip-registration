@@ -194,7 +194,7 @@ class ipRegistrationPlugin extends phpef {
 
 	public function getIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
 		$auth = $this->auth->getAuth();
-		if ($viaAPIToken || (isset($auth['isAdmin']) && $auth['isAdmin'] == true)) {
+		if (($viaAPIToken || (isset($auth['isAdmin']) && $auth['isAdmin'] == true)) && $UserIP == null) {
 			$dbquery = $this->sql->prepare('SELECT * FROM ips ORDER BY datetime DESC');
 			$dbquery->execute();
 		} else {
