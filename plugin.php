@@ -99,19 +99,21 @@ class ipRegistrationPlugin extends phpef {
             ]
         );
 
+		$UnifiSiteList = $this->getUnifiSites() ?? [];
 		$UnifiSites = array_merge($AppendNone,array_map(function($item) {
 			return [
 				"name" => $item['desc'],
 				"value" => $item['_id']
 			];
-		}, $this->getUnifiSites() ?? []));
+		}, $UnifiSiteList));
 
+		$UnifiFirewallAddressGroupList = $this->getUnifiFirewallAddressGroups() ?? [];
 		$UnifiFirewallAddressGroups = array_merge($AppendNone,array_map(function($item) {
 			return [
 				"name" => $item['name'],
 				"value" => $item['_id']
 			];
-		}, $this->getUnifiFirewallAddressGroups() ?? []));
+		}, $UnifiFirewallAddressGroupList));
 
 		return array(
 			'Plugin Settings' => array(
