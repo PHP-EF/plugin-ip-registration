@@ -104,14 +104,14 @@ class ipRegistrationPlugin extends phpef {
 				"name" => $item['desc'],
 				"value" => $item['_id']
 			];
-		}, $this->getUnifiSites()));
+		}, $this->getUnifiSites() ?? []));
 
 		$UnifiFirewallAddressGroups = array_merge($AppendNone,array_map(function($item) {
 			return [
 				"name" => $item['name'],
 				"value" => $item['_id']
 			];
-		}, $this->getUnifiFirewallAddressGroups()));
+		}, $this->getUnifiFirewallAddressGroups() ?? []));
 
 		return array(
 			'Plugin Settings' => array(
