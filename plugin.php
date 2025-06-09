@@ -92,19 +92,50 @@ class ipRegistrationPlugin extends phpef {
 		$IPTableAttributes['show-columns'] = 'true';
 		$IPTableAttributes['page-size'] = '25';
 
+        $AppendNone = array(
+            [
+                "name" => 'None',
+                "value" => ''
+            ]
+        );
+
+		$UnifiSites = array_merge($AppendNone,array_map(function($item) {
+			return [
+				"name" => $item['desc'],
+				"value" => $item['_id']
+			];
+		}, $this->getUnifiSites()));
+
+		$UnifiFirewallAddressGroups = array_merge($AppendNone,array_map(function($item) {
+			return [
+				"name" => $item['name'],
+				"value" => $item['_id']
+			];
+		}, $this->getUnifiFirewallAddressGroups()));
+
 		return array(
 			'Plugin Settings' => array(
 				$this->settingsOption('js', 'pluginJs', ['src' => '/api/page/plugin/IP-Registration/js']),
 				$this->settingsOption('auth', 'Auth', ['label' => 'Restrict registration to a particular role']),
+				$this->settingsOption('passwordalt', 'ApiToken',['label' => 'IP Registration API Token']),
+				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="generateAPIKey(\'ApiToken\');"']),
+				$this->settingsOption('select', 'firewallType', ['label' => 'Firewall Type', 'options' => array(array("name" => 'Unifi', "value" => 'unifi'),array("name" => 'PfSense', "value" => 'pfsense'))]),
+				$this->settingsOption('url', 'PlexDomain', ['label' => 'The domain for Plex to run availability checks against', 'placeholder' => 'https://myplexserver.site']),
+				$this->settingsOption('input', 'PlexPort', ['label' => 'The port for Plex to run availability checks against.', 'placeholder' => '32400'])
+			),
+			'Unifi Settings' => array(
+				$this->settingsOption('input', 'Unifi-IP', ['label' => 'The IP / FQDN of your Unifi Controller']),
+				$this->settingsOption('input', 'Unifi-Username', ['label' => 'The username of your Unifi account']),
+				$this->settingsOption('password', 'Unifi-Password', ['label' => 'The password of your Unifi account']),
+				$this->settingsOption('select', 'Unifi-Site-ID', ['label' => 'Unifi Site', 'options' => $UnifiSites]),
+				$this->settingsOption('select', 'Unifi-Address-Group', ['label' => 'Unifi Firewall Address Group', 'options' => $UnifiFirewallAddressGroups]),
+			),
+			'PfSense Settings' => array(
 				$this->settingsOption('input', 'PfSense-IP', ['label' => 'The IP / FQDN of your pfsense appliance(s). Comma separated']),
 				$this->settingsOption('input', 'PfSense-Username', ['label' => 'The username of your pfsense account']),
 				$this->settingsOption('password', 'PfSense-Password', ['label' => 'The password of your pfsense account']),
 				$this->settingsOption('input', 'PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.', 'placeholder' => '100']),
-				$this->settingsOption('passwordalt', 'ApiToken',['label' => 'IP Registration API Token']),
-				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="generateAPIKey(\'ApiToken\');"']),
-				$this->settingsOption('url', 'PlexDomain', ['label' => 'The domain for Plex to run availability checks against', 'placeholder' => 'https://myplexserver.site']),
-				$this->settingsOption('input', 'PlexPort', ['label' => 'The port for Plex to run availability checks against.', 'placeholder' => '32400'])
 			),
 			'IP Addresses' => array(
 				$this->settingsOption('bootstrap-table', 'IPTable', ['id' => 'IPTable', 'columns' => $IPTableColumns, 'dataAttributes' => $IPTableAttributes, 'width' => '12']),
@@ -144,6 +175,12 @@ class ipRegistrationPlugin extends phpef {
             username TEXT
         )");
     }
+
+	private function getAllRegistrations() {
+		$dbquery = $this->sql->prepare('SELECT * FROM ips ORDER BY datetime DESC');
+		$dbquery->execute();
+		return $dbquery->fetchAll(PDO::FETCH_ASSOC);
+	}
 
 	public function getIPRegistrations($UserIP = null, $Username = null, $viaAPIToken = false) {
 		$auth = $this->auth->getAuth();
@@ -302,6 +339,26 @@ class ipRegistrationPlugin extends phpef {
 	}
 
 	public function updateFirewall() {
+		$FirewallType = $this->pluginConfig['firewallType'] ?? null;
+		if ($FirewallType != null) {
+			switch ($FirewallType) {
+				case 'unifi':
+					return $this->updateUnifiFirewall();
+				case 'pfsense':
+					return $this->updatePfSenseFirewall();
+				default:
+					$this->logging->writeLog('IPRegistration','Invalid Firewall Type: '.$FirewallType,'error');
+					$this->api->setAPIResponse('Error', 'IP Registration Plugin: Invalid Firewall Type');
+					return false;
+			}
+		} else {
+			$this->logging->writeLog('IPRegistration','Firewall Type not set in plugin configuration','error');
+			$this->api->setAPIResponse('Error', 'IP Registration Plugin: Firewall Type not set');
+			return false;
+		}
+	}
+
+	public function updatePfSenseFirewall() {
 		$PfSenseHosts = explode(',',$this->pluginConfig['PfSense-IP']);
 		$PfSenseTable = $this->pluginConfig['PfSense-IPTable'] ?? null;
 		if (!empty($PfSenseHosts) && $PfSenseTable) {
@@ -333,6 +390,197 @@ class ipRegistrationPlugin extends phpef {
 			}
 		} else {
 			$this->logging->writeLog('IPRegistration','PfSense IP Address(es) not set','error');
+		}
+	}
+
+	public function updateUnifiFirewall() {
+		$Registrations = $this->getAllRegistrations();
+		$Endpoint = 'proxy/network/api/s/default/rest/firewallgroup/'.$this->pluginConfig['Unifi-Address-Group'];
+		
+		// Get a list of IP Addresses from the registrations
+		$IPs = [];
+		foreach ($Registrations as $Registration) {
+			if (filter_var($Registration['ip'], FILTER_VALIDATE_IP)) {
+				$IPs[] = $Registration['ip'];
+			}
+		}
+
+		$Data = [
+			'group_members' => $IPs
+		];
+		$Response = $this->queryUnifiAPI($Endpoint,'PUT',$Data);
+		if ($Response['meta']['rc'] == 'ok') {
+			$this->logging->writeLog('IPRegistration','Unifi Firewall Address Group updated successfully','info',[$Endpoint]);
+			$this->api->setAPIResponseMessage('IP Registration Plugin: Unifi Firewall Address Group updated successfully.');
+			return true;
+		} else {
+			$this->logging->writeLog('IPRegistration','Failed to update Unifi Firewall Address Group: '.$Response['meta']['msg'],'error',[$Endpoint]);
+			$this->api->setAPIResponse('Error', 'IP Registration Plugin: Failed to update Unifi Firewall Address Group');
+			return false;
+		}
+	}
+
+	public function getUnifiToken() {
+		$UnifiIP = $this->pluginConfig['Unifi-IP'] ?? null;
+		$UnifiUsername = $this->pluginConfig['Unifi-Username'] ?? null;
+		$UnifiPassword = decrypt($this->pluginConfig['Unifi-Password'],$this->config->get('Security','Salt')) ?? null;
+
+		if ($UnifiIP && $UnifiUsername && $UnifiPassword) {
+			$Url = 'https://'.$UnifiIP.'/api/auth/login';
+			$DataArr = [
+				'username' => $UnifiUsername,
+				'password' => $UnifiPassword,
+				'token' => '',
+				'rememberMe' => true
+			];
+			$response = $this->api->query->post($Url, $DataArr, [], [], true);
+			if ($response->success) {
+				$Headers = $response->headers->getAll();
+				// Extract the token from the Set-Cookie header
+				$cookieHeader = $Headers['set-cookie'][0] ?? '';
+				preg_match('/TOKEN=([^;]+)/', $cookieHeader, $matches);
+				$token = $matches[1] ?? '';
+				// Store the token in the config
+				$CookieResults = [
+					'Unifi-API-Token' => encrypt($token, $this->config->get('Security','Salt')),
+					'Unifi-CSRF-Token' => encrypt($Headers['x-updated-csrf-token'][0], $this->config->get('Security','Salt')),
+				];
+				$this->config->setPlugin($CookieResults, 'IP-Registration');
+				$this->logging->writeLog('IPRegistration','Unifi Controller token retrieved successfully','info');
+				return true;
+			} else {
+				$this->logging->writeLog('IPRegistration','Failed to retrieve Unifi Controller token: '.$response->body,'error');
+				return false;
+			}
+
+		} else {
+			$this->logging->writeLog('IPRegistration','Unifi Controller configuration not set','error');
+			return false;
+		}
+	}
+
+	public function checkUnifiAuth() {
+		$UnifiIP = $this->pluginConfig['Unifi-IP'] ?? null;
+		$UnifiAPIToken = decrypt($this->pluginConfig['Unifi-API-Token'], $this->config->get('Security','Salt')) ?? null;
+		$UnifiCSRFToken = decrypt($this->pluginConfig['Unifi-CSRF-Token'], $this->config->get('Security','Salt')) ?? null;
+
+		if ($UnifiIP && $UnifiAPIToken && $UnifiCSRFToken) {
+			$Url = 'https://'.$UnifiIP.'/api/users/self';
+			$HeadersArr = [
+				'Content-Type' => 'application/json',
+				'Cookie' => 'TOKEN='.$UnifiAPIToken.';',
+				'x-csrf-token' => $UnifiCSRFToken
+			];
+			$response = $this->api->query->get($Url,$HeadersArr,[],true);
+
+			$httpResponse = $response->status_code;
+			if ($httpResponse == 401) {
+                $this->logging->writeLog('IPRegistration','Unifi API and/or CSRF Token Expired. Generating new session...','warning');
+				$this->getUnifiToken();
+				$response = $this->api->query->get($Url,$HeadersArr,[],true);
+			}
+
+			if ($response->success) {
+				$UserData = json_decode($response->body, true);
+				if (isset($UserData['username']) && $UserData['username'] == $this->pluginConfig['Unifi-Username']) {
+					$this->logging->writeLog('IPRegistration','Unifi Controller authentication successful','debug');
+					return [
+						'Authenticated' => true,
+						'Username' => $UserData['username'],
+						'IP' => $UnifiIP,
+						'APIToken' => $UnifiAPIToken,
+						'CSRFToken' => $UnifiCSRFToken
+					];
+				} else {
+					$this->logging->writeLog('IPRegistration','Unifi Controller authentication failed: Username mismatch','error');
+					return false;
+				}
+			} else {
+				$this->logging->writeLog('IPRegistration','Unifi Controller authentication failed: '.$response->body,'error');
+				return false;
+			}
+			return false;
+		} else {
+			$this->logging->writeLog('IPRegistration','Unifi Controller configuration not set','error');
+			return false;
+		}
+	}
+
+	public function getUnifiAuth() {
+		$Auth = $this->checkUnifiAuth();
+		if ($Auth) {
+			return $Auth;
+		} else {
+			$this->logging->writeLog('IPRegistration','Unifi Controller authentication failed','error');
+			return false;
+		}
+	}
+
+	public function queryUnifiAPI($Endpoint, $Method = 'GET', $Data = []) {
+		$Auth = $this->getUnifiAuth();
+		if ($Auth['Authenticated']) {
+			$MethodLower = strtolower($Method);
+			if ($MethodLower != 'get') {
+				$Result = $this->api->query->$MethodLower(
+					'https://'.$this->pluginConfig['Unifi-IP'].'/'.$Endpoint,
+					$Data,
+					[
+						'Content-Type' => 'application/json',
+						'Cookie' => 'TOKEN='.$Auth['APIToken'].';',
+						'x-csrf-token' => $Auth['CSRFToken']
+					]
+				);
+			} else {
+				$Result = $this->api->query->$MethodLower(
+					'https://'.$this->pluginConfig['Unifi-IP'].'/'.$Endpoint,
+					[
+						'Content-Type' => 'application/json',
+						'Cookie' => 'TOKEN='.$Auth['APIToken'].';',
+						'x-csrf-token' => $Auth['CSRFToken']
+					]
+				);
+			}
+
+			return $Result;
+		} else {
+			$this->logging->writeLog('IPRegistration','Unifi Controller authentication failed','error');
+			return false;
+		}
+	}
+
+	public function getUnifiSites() {
+		$Response = $this->queryUnifiAPI('proxy/network/v2/api/info');
+		if ($Response) {
+			if ($Response['sites']) {
+				return $Response['sites'];
+			}
+			return $Response['sites'];
+		} else {
+			$this->logging->writeLog('IPRegistration','Failed to retrieve Unifi sites','error');
+			$this->api->setAPIResponse('Error', 'Failed to retrieve Unifi sites');
+			return false;
+		}
+	}
+
+	public function getUnifiFirewallAddressGroups() {
+		// This seems to use 'default' site, not sure how to change this yet
+		$Response = $this->queryUnifiAPI('proxy/network/api/s/default/rest/firewallgroup');
+		if ($Response) {
+			if (isset($Response['data'])) {
+				 // Filter out groups that are not of group_type 'address-group'
+				$AddressGroups = array_filter($Response['data'], function($group) {
+					return isset($group['group_type']) && $group['group_type'] === 'address-group';
+				});
+				// Re-index the array to ensure it starts from 0
+				$Response['data'] = array_values($AddressGroups);
+				$this->logging->writeLog('IPRegistration','Successfully retrieved Unifi firewall address groups','debug',$Response['data']);
+				return $Response['data'];
+			}
+			return $Response;
+		} else {
+			$this->logging->writeLog('IPRegistration','Failed to retrieve Unifi firewall groups','error');
+			$this->api->setAPIResponse('Error', 'Failed to retrieve Unifi firewall groups');
+			return false;
 		}
 	}
 }

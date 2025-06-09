@@ -83,3 +83,58 @@ $app->delete('/plugin/ipregistration/ip/{id}', function ($request, $response, $a
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
+
+$app->get('/plugin/ipregistration/unifi/token', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getUnifiToken());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+
+$app->get('/plugin/ipregistration/unifi/auth', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->checkUnifiAuth());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+
+$app->get('/plugin/ipregistration/unifi/sites', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getUnifiSites());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+
+$app->get('/plugin/ipregistration/unifi/firewallgroups', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->getUnifiFirewallAddressGroups());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
+
+$app->get('/plugin/ipregistration/unifi/firewallgroups/update', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->auth->checkAccess('ADMIN-CONFIG')) {
+		$ipRegistrationPlugin->api->setAPIResponseData($ipRegistrationPlugin->updateUnifiFirewall());
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});
