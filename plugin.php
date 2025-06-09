@@ -423,7 +423,11 @@ class ipRegistrationPlugin extends phpef {
 	public function getUnifiToken() {
 		$UnifiIP = $this->pluginConfig['Unifi-IP'] ?? null;
 		$UnifiUsername = $this->pluginConfig['Unifi-Username'] ?? null;
-		$UnifiPassword = decrypt($this->pluginConfig['Unifi-Password'],$this->config->get('Security','Salt')) ?? null;
+		try {
+            $UnifiPassword = decrypt($this->pluginConfig['Unifi-Password'],$this->config->get('Security','Salt')) ?? null;
+        } catch (Exception $e) {
+            $UnifiPassword = $e;
+        }
 
 		if ($UnifiIP && $UnifiUsername && $UnifiPassword) {
 			$Url = 'https://'.$UnifiIP.'/api/auth/login';
@@ -461,8 +465,17 @@ class ipRegistrationPlugin extends phpef {
 
 	public function checkUnifiAuth() {
 		$UnifiIP = $this->pluginConfig['Unifi-IP'] ?? null;
-		$UnifiAPIToken = decrypt($this->pluginConfig['Unifi-API-Token'], $this->config->get('Security','Salt')) ?? null;
-		$UnifiCSRFToken = decrypt($this->pluginConfig['Unifi-CSRF-Token'], $this->config->get('Security','Salt')) ?? null;
+		try {
+			$UnifiAPIToken = decrypt($this->pluginConfig['Unifi-API-Token'], $this->config->get('Security','Salt')) ?? null;
+		} catch (Exception $e) {
+			$UnifiAPIToken = $e;
+		}
+
+		try {
+			$UnifiCSRFToken = decrypt($this->pluginConfig['Unifi-CSRF-Token'], $this->config->get('Security','Salt')) ?? null;
+		} catch (Exception $e) {
+			$UnifiCSRFToken = $e;
+		}
 
 		if ($UnifiIP && $UnifiAPIToken && $UnifiCSRFToken) {
 			$Url = 'https://'.$UnifiIP.'/api/users/self';
