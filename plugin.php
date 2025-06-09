@@ -475,6 +475,11 @@ class ipRegistrationPlugin extends phpef {
 
 	public function checkUnifiAuth() {
 		$UnifiIP = $this->pluginConfig['Unifi-IP'] ?? null;
+
+		if (!isset($this->pluginConfig['Unifi-API-Token']) || !isset($this->pluginConfig['Unifi-CSRF-Token'])) {
+			$this->getUnifiToken();
+		}
+
 		try {
 			$UnifiAPIToken = decrypt($this->pluginConfig['Unifi-API-Token'], $this->config->get('Security','Salt')) ?? null;
 		} catch (Exception $e) {
