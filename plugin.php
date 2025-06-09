@@ -100,20 +100,28 @@ class ipRegistrationPlugin extends phpef {
         );
 
 		$UnifiSiteList = $this->getUnifiSites() ?? [];
-		$UnifiSites = array_merge($AppendNone,array_map(function($item) {
-			return [
-				"name" => $item['desc'],
-				"value" => $item['_id']
-			];
-		}, $UnifiSiteList));
+		if (!empty($UnifiSiteList)) {
+			$UnifiSites = array_merge($AppendNone,array_map(function($item) {
+				return [
+					"name" => $item['desc'],
+					"value" => $item['_id']
+				];
+			}, $UnifiSiteList));
+		} else {
+			$UnifiSites = $AppendNone;
+		}
 
 		$UnifiFirewallAddressGroupList = $this->getUnifiFirewallAddressGroups() ?? [];
-		$UnifiFirewallAddressGroups = array_merge($AppendNone,array_map(function($item) {
-			return [
-				"name" => $item['name'],
-				"value" => $item['_id']
-			];
-		}, $UnifiFirewallAddressGroupList));
+		if (!empty($UnifiFirewallAddressGroupList)) {
+			$UnifiFirewallAddressGroups = array_merge($AppendNone,array_map(function($item) {
+				return [
+					"name" => $item['name'],
+					"value" => $item['_id']
+				];
+			}, $UnifiFirewallAddressGroupList));
+		} else {
+			$UnifiFirewallAddressGroups = $AppendNone;
+		}
 
 		return array(
 			'Plugin Settings' => array(
